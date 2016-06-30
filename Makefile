@@ -121,7 +121,8 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
        src/main.c \
        src/usbcfg.c \
-       src/console.c
+       src/console.c \
+       src/pulse.c
 
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

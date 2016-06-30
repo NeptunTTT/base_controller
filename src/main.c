@@ -5,6 +5,7 @@
 #include "hal.h"
 #include "test.h"
 #include "console.h"
+#include "pulse.h"
 
 
 /*===========================================================================*/
@@ -23,14 +24,8 @@ static THD_FUNCTION(thread1, p) {
     systime_t time;
     time = 500;
 
-    palSetPad(GPIOD, GPIOD_LED3);
-    palSetPad(GPIOD, GPIOD_LED4);
-    palSetPad(GPIOD, GPIOD_LED5);
     palSetPad(GPIOD, GPIOD_LED6);
     chThdSleepMilliseconds(time/10);
-    palClearPad(GPIOD, GPIOD_LED3);
-    palClearPad(GPIOD, GPIOD_LED4);
-    palClearPad(GPIOD, GPIOD_LED5);
     palClearPad(GPIOD, GPIOD_LED6);
     chThdSleepMilliseconds(time);
   }
@@ -47,9 +42,9 @@ static THD_FUNCTION(task20ms, p) {
   chRegSetThreadName("task20ms");
   time = chVTGetSystemTime();  
   while (TRUE) {
-    time += MS2ST(20);
+    time += MS2ST(1);
 
-
+    pulseCalc();
 
     chThdSleepUntil(time);
   }
@@ -74,6 +69,11 @@ int main(void) {
    * Shell manager initialization.
    */
   consoleInit();
+
+  /*
+   * Pulse control initialization.
+   */
+  pulseInit();
 
   /*
    * Creates the 20ms Task.
