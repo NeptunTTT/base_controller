@@ -24,7 +24,7 @@
  *PA3   - W_L
  */
 
-#define PWM_WIDTH     1000
+#define PWM_WIDTH     2000
 
 static PWMConfig high_side = {
   28e6,                                   /* 10kHz PWM clock frequency.   */
@@ -240,6 +240,10 @@ void pulseWidth(uint32_t in){
   level_m = (uint32_t)(in / MEDIUM_RATIO);
   level_l = (uint32_t)(in / LOW_RATIO);
   chSysUnlock();
+}
+
+int16_t pulseGetValue(){
+    return calc_deg;
 }
 
 void cmd_pulseValues(BaseSequentialStream *chp, int argc, char *argv[]) {

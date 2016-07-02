@@ -18,6 +18,7 @@ void pulseInit(void);
 void pulseCalc(void);
 void pulseControl(uint32_t degree);
 void pulseWidth(uint32_t in);
+int16_t pulseGetValue();
 
 void cmd_pulseValues(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_get_data(BaseSequentialStream *chp, int argc, char *argv[]);

@@ -122,7 +122,8 @@ CSRC = $(STARTUPSRC) \
        src/main.c \
        src/usbcfg.c \
        src/console.c \
-       src/pulse.c
+       src/pulse.c \
+       src/resolver.c
 
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

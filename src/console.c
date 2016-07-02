@@ -26,6 +26,8 @@
 
 #include "usbcfg.h"
 
+#include "resolver.h"
+
 /*===========================================================================*/
 /* Command line related.                                                     */
 /*===========================================================================*/
@@ -129,6 +131,8 @@ static const ShellCommand commands[] = {
   {"threads", cmd_threads},
   {"test", cmd_test},
   {"write", cmd_write},
+
+  {"resolver", cmd_resolverValues},
   {NULL, NULL}
 };
 
