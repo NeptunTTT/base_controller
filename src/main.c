@@ -6,6 +6,7 @@
 #include "test.h"
 #include "console.h"
 #include "pulse.h"
+#include "resolver.h"
 
 
 /*===========================================================================*/
@@ -42,7 +43,7 @@ static THD_FUNCTION(task20ms, p) {
   chRegSetThreadName("task20ms");
   time = chVTGetSystemTime();  
   while (TRUE) {
-    time += MS2ST(1);
+    time += MS2ST(5);
 
     pulseCalc();
 
@@ -69,6 +70,11 @@ int main(void) {
    * Shell manager initialization.
    */
   consoleInit();
+
+  /*
+   * Resolver control initialization.
+   */
+  resolverInit();
 
   /*
    * Pulse control initialization.
