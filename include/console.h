@@ -1,6 +1,6 @@
 /*
-    Smarty - Copyright (C) 2014
-    GAMF MegaLux Team              
+    Motor Controller - Copyright (C) 2016
+    Neptun TTT Kft.              
 */
 
 #ifndef CONSOLE_H_INCLUDED

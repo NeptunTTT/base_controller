@@ -1,17 +1,14 @@
+/*
+    Motor Controller - Copyright (C) 2016
+    Neptun TTT Kft.              
+*/
+
 #include "pulse.h"
 
 #include "chprintf.h"
 
-#define U_H           0
-#define V_H           1
-#define W_H           2
-
-#define U_L           0
-#define V_L           1
-#define W_L           2
-
 #define MEDIUM_RATIO  2
-#define LOW_RATIO     10
+#define LOW_RATIO     3
 
 /*
  *PE9   - U_H
@@ -24,7 +21,6 @@
  *PA3   - W_L
  */
 
-#define PWM_WIDTH     2000
 
 static PWMConfig high_side = {
   28e6,                                   /* 10kHz PWM clock frequency.   */
@@ -59,24 +55,19 @@ uint32_t level_m; //medium - full / 2
 uint32_t level_h; //height - full
 
 uint32_t section;
-uint32_t calc_deg;
-uint32_t width;
+
+uint32_t u_h;
+uint32_t v_h;
+uint32_t w_h;
+
+uint32_t u_l;
+uint32_t v_l;
+uint32_t w_l;
 
 void pulseInit(void) {
 
   pwmStart(&PWMD4, &high_side);
   pwmStart(&PWMD8, &low_side);
-
-  width = PWM_WIDTH;
-  calc_deg = 0;
-}
-
-void pulseCalc(void) {
-  calc_deg+=10;
-  calc_deg = calc_deg > 359 ? 0 : calc_deg;
-  
-  pulseWidth(width);
-  pulseControl(calc_deg);
 }
 
 void pulseControl(uint32_t degree){
@@ -112,118 +103,118 @@ void pulseControl(uint32_t degree){
     case PULSE_AB:
 
       if (degree >= 0 && degree < 20){
-        pwmEnableChannel(&PWMD4, U_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
+        pwmEnableChannel(&PWMD4, u_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
       }
       else if (degree >= 20 && degree < 40){
-        pwmEnableChannel(&PWMD4, U_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
+        pwmEnableChannel(&PWMD4, u_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
       }
       else if (degree >= 40 && degree < 60){
-        pwmEnableChannel(&PWMD4, U_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
+        pwmEnableChannel(&PWMD4, u_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
       }
 
-      pwmDisableChannel(&PWMD4, V_H);
-      pwmDisableChannel(&PWMD4, W_H);
+      pwmDisableChannel(&PWMD4, v_h);
+      pwmDisableChannel(&PWMD4, w_h);
 
-      pwmDisableChannel(&PWMD8, U_L);
-      pwmEnableChannel(&PWMD8, V_L, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
-      pwmDisableChannel(&PWMD8, W_L);
+      pwmDisableChannel(&PWMD8, u_l);
+      pwmEnableChannel(&PWMD8, v_l, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
+      pwmDisableChannel(&PWMD8, w_l);
       break;
 
     case PULSE_AC:
       if (degree >= 60 && degree < 80){
-        pwmEnableChannel(&PWMD4, U_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
+        pwmEnableChannel(&PWMD4, u_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
       }
       else if (degree >= 80 && degree < 100){
-        pwmEnableChannel(&PWMD4, U_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
+        pwmEnableChannel(&PWMD4, u_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
       }
       else if (degree >= 100 && degree < 120){
-        pwmEnableChannel(&PWMD4, U_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
+        pwmEnableChannel(&PWMD4, u_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
       }
 
-      pwmDisableChannel(&PWMD4, V_H);
-      pwmDisableChannel(&PWMD4, W_H);
+      pwmDisableChannel(&PWMD4, v_h);
+      pwmDisableChannel(&PWMD4, w_h);
 
-      pwmDisableChannel(&PWMD8, U_L);
-      pwmDisableChannel(&PWMD8, V_L);
-      pwmEnableChannel(&PWMD8, W_L, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
+      pwmDisableChannel(&PWMD8, u_l);
+      pwmDisableChannel(&PWMD8, v_l);
+      pwmEnableChannel(&PWMD8, w_l, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
       break;
 
     case PULSE_BC:
-      pwmDisableChannel(&PWMD4, U_H);
+      pwmDisableChannel(&PWMD4, u_h);
 
       if (degree >= 120 && degree < 140){
-        pwmEnableChannel(&PWMD4, V_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
+        pwmEnableChannel(&PWMD4, v_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
       }
       else if (degree >= 140 && degree < 160){
-        pwmEnableChannel(&PWMD4, V_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
+        pwmEnableChannel(&PWMD4, v_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
       }
       else if (degree >= 160 && degree < 180){
-        pwmEnableChannel(&PWMD4, V_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
+        pwmEnableChannel(&PWMD4, v_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
       }
 
-      pwmDisableChannel(&PWMD4, W_H);
+      pwmDisableChannel(&PWMD4, w_h);
       
-      pwmDisableChannel(&PWMD8, U_L);
-      pwmDisableChannel(&PWMD8, V_L);
-      pwmEnableChannel(&PWMD8, W_L, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
+      pwmDisableChannel(&PWMD8, u_l);
+      pwmDisableChannel(&PWMD8, v_l);
+      pwmEnableChannel(&PWMD8, w_l, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
       break;
 
     case PULSE_BA:
-      pwmDisableChannel(&PWMD4, U_H);
+      pwmDisableChannel(&PWMD4, u_h);
 
       if (degree >= 180 && degree < 200){
-        pwmEnableChannel(&PWMD4, V_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
+        pwmEnableChannel(&PWMD4, v_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
       }
       else if (degree >= 200 && degree < 220){
-        pwmEnableChannel(&PWMD4, V_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
+        pwmEnableChannel(&PWMD4, v_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
       }
       else if (degree >= 220 && degree < 240){
-        pwmEnableChannel(&PWMD4, V_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
+        pwmEnableChannel(&PWMD4, v_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
       }
 
-      pwmDisableChannel(&PWMD4, W_H);
+      pwmDisableChannel(&PWMD4, w_h);
 
-      pwmEnableChannel(&PWMD8, U_L, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
-      pwmDisableChannel(&PWMD8, V_L);
-      pwmDisableChannel(&PWMD8, W_L);
+      pwmEnableChannel(&PWMD8, u_l, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
+      pwmDisableChannel(&PWMD8, v_l);
+      pwmDisableChannel(&PWMD8, w_l);
       break;
 
     case PULSE_CA:
-      pwmDisableChannel(&PWMD4, U_H);
-      pwmDisableChannel(&PWMD4, V_H);
+      pwmDisableChannel(&PWMD4, u_h);
+      pwmDisableChannel(&PWMD4, v_h);
 
       if (degree >= 240 && degree < 260){
-        pwmEnableChannel(&PWMD4, W_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
+        pwmEnableChannel(&PWMD4, w_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
       }
       else if (degree >= 260 && degree < 280){
-        pwmEnableChannel(&PWMD4, W_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
+        pwmEnableChannel(&PWMD4, w_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
       }
       else if (degree >= 280 && degree < 300){
-        pwmEnableChannel(&PWMD4, W_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
+        pwmEnableChannel(&PWMD4, w_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
       }
 
-      pwmEnableChannel(&PWMD8, U_L, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
-      pwmDisableChannel(&PWMD8, V_L);
-      pwmDisableChannel(&PWMD8, W_L);
+      pwmEnableChannel(&PWMD8, u_l, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
+      pwmDisableChannel(&PWMD8, v_l);
+      pwmDisableChannel(&PWMD8, w_l);
       break;
 
     case PULSE_CB:
-      pwmDisableChannel(&PWMD4, U_H);
-      pwmDisableChannel(&PWMD4, V_H);
+      pwmDisableChannel(&PWMD4, u_h);
+      pwmDisableChannel(&PWMD4, v_h);
       
       if (degree >= 300 && degree < 320){
-        pwmEnableChannel(&PWMD4, W_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
+        pwmEnableChannel(&PWMD4, w_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_h));
       }
       else if (degree >= 320 && degree < 340){
-        pwmEnableChannel(&PWMD4, W_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
+        pwmEnableChannel(&PWMD4, w_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_m));
       }
       else if (degree >= 340 && degree < 360){
-        pwmEnableChannel(&PWMD4, W_H, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
+        pwmEnableChannel(&PWMD4, w_h, PWM_PERCENTAGE_TO_WIDTH(&PWMD4, level_l));
       }
 
-      pwmDisableChannel(&PWMD8, U_L);
-      pwmEnableChannel(&PWMD8, V_L, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
-      pwmDisableChannel(&PWMD8, W_L);
+      pwmDisableChannel(&PWMD8, u_l);
+      pwmEnableChannel(&PWMD8, v_l, PWM_PERCENTAGE_TO_WIDTH(&PWMD8, 10000));
+      pwmDisableChannel(&PWMD8, w_l);
       break;
 
     default:
@@ -242,67 +233,27 @@ void pulseWidth(uint32_t in){
   chSysUnlock();
 }
 
+void pulseDirection(uint16_t direction){
+  if(direction == 1){
+    u_h = 0;
+    v_h = 1;
+    w_h = 2;
+
+    u_l = 0;
+    v_l = 1;
+    w_l = 2;
+  }
+
+  else if(direction == 2){
+    u_h = 1;
+    v_h = 0;
+    w_h = 2;
+
+    u_l = 1;
+    v_l = 0;
+    w_l = 2;
+  }
+}
+
 int16_t pulseGetValue(){
-    return calc_deg;
-}
-
-void cmd_pulseValues(BaseSequentialStream *chp, int argc, char *argv[]) {
- 
-  (void)argc;
-  (void)argv;
-
-  uint32_t in;
-      
-  if ((argc == 2) && (strcmp(argv[0], "width") == 0)){
-    in = atol(argv[1]);
-
-    if (in < 0 || in > 10000)
-    {
-      goto ERROR;
-    }
-    else
-    {
-      width = (uint32_t)in;
-      chprintf(chp,"Set pulse width: %d\r\n", width);
-      return;
-    }
-  }
-
-  if ((argc == 2) && (strcmp(argv[0], "deg") == 0)){
-    in = atol(argv[1]);
-
-    if (in < 0 || in > 359)
-    {
-      goto ERROR;
-    }
-    else
-    {
-      pulseControl(in);
-      chprintf(chp,"Set motor degree: %d\r\n", in);
-      return;
-    }
-  }
-
-  else{
-  goto ERROR;
-  }
-
-ERROR:
-  chprintf(chp, "Usage: pulse width (0 - 10000)\r\n");
-  chprintf(chp, "       pulse deg   (0 - 359)\r\n");
-  return;
-}
-
-void cmd_get_data(BaseSequentialStream *chp, int argc, char *argv[]){
-  
-  (void)argc;
-  (void)argv;
-  chprintf(chp, "\x1B\x63");
-  chprintf(chp, "\x1B[2J");
-  
-  while (chnGetTimeout((BaseChannel *)chp, TIME_IMMEDIATE) == Q_TIMEOUT) {
-    chprintf(chp, "\x1B[%d;%dH", 0, 0);
-    chprintf(chp,"Values\r\n");
-    chThdSleepMilliseconds(500);
-  }
 }

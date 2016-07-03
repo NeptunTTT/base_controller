@@ -1,3 +1,8 @@
+/*
+    Motor Controller - Copyright (C) 2016
+    Neptun TTT Kft.              
+*/
+
 #include <stdio.h>
 #include <string.h>
 
@@ -7,6 +12,7 @@
 #include "console.h"
 #include "pulse.h"
 #include "resolver.h"
+#include "control.h"
 
 
 /*===========================================================================*/
@@ -25,9 +31,9 @@ static THD_FUNCTION(thread1, p) {
     systime_t time;
     time = 500;
 
-    palSetPad(GPIOD, GPIOD_LED6);
+    //palSetPad(GPIOD, GPIOD_LED6);
     chThdSleepMilliseconds(time/10);
-    palClearPad(GPIOD, GPIOD_LED6);
+    //palClearPad(GPIOD, GPIOD_LED6);
     chThdSleepMilliseconds(time);
   }
   return 0; /* Never executed.*/
@@ -44,8 +50,6 @@ static THD_FUNCTION(task20ms, p) {
   time = chVTGetSystemTime();  
   while (TRUE) {
     time += MS2ST(5);
-
-    pulseCalc();
 
     chThdSleepUntil(time);
   }
@@ -72,14 +76,19 @@ int main(void) {
   consoleInit();
 
   /*
+   * Pulse control initialization.
+   */
+  pulseInit();
+
+  /*
    * Resolver control initialization.
    */
   resolverInit();
 
   /*
-   * Pulse control initialization.
+   * Control initialization.
    */
-  pulseInit();
+  controlInit();
 
   /*
    * Creates the 20ms Task.

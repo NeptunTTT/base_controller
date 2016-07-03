@@ -27,6 +27,7 @@
 #include "usbcfg.h"
 
 #include "resolver.h"
+#include "control.h"
 
 /*===========================================================================*/
 /* Command line related.                                                     */
@@ -133,6 +134,9 @@ static const ShellCommand commands[] = {
   {"write", cmd_write},
 
   {"resolver", cmd_resolverValues},
+  {"control", cmd_controlSet},
+  {"control_values", cmd_controlValues},
+  {"auto_calib", cmd_autoCalib},
   {NULL, NULL}
 };
 

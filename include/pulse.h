@@ -1,3 +1,8 @@
+/*
+    Motor Controller - Copyright (C) 2016
+    Neptun TTT Kft.              
+*/
+
 #ifndef PULSE_H_INCLUDED
 #define PULSE_H_INCLUDED
 
@@ -15,12 +20,9 @@ enum logStates
 };
 
 void pulseInit(void);
-void pulseCalc(void);
 void pulseControl(uint32_t degree);
 void pulseWidth(uint32_t in);
+void pulseDirection(uint16_t direction);
 int16_t pulseGetValue();
-
-void cmd_pulseValues(BaseSequentialStream *chp, int argc, char *argv[]);
-void cmd_get_data(BaseSequentialStream *chp, int argc, char *argv[]);
 
 #endif

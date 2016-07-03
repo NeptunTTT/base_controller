@@ -1,3 +1,8 @@
+/*
+    Motor Controller - Copyright (C) 2016
+    Neptun TTT Kft.              
+*/
+
 #include <stdio.h>
 #include <math.h>
 
@@ -13,8 +18,6 @@
 #define CS            12  //GPIOB_12
 #define SAMPLE        10  //GPIOE_10
 
-#define PHASE_PAIR    10
-
 #define MAX_RESOLVER  4095
 #define MIN_RESOLVER  0
 
@@ -22,6 +25,7 @@
 #define MAP_MIN       0
 
 #define AVG_SIZE      100
+#define AVG_SIZE_10   10
 
 uint16_t pos;
 uint16_t rdvel;
@@ -43,10 +47,17 @@ uint16_t pos_different;
 uint16_t adc_cycle;
 uint16_t cycle;
 
+int32_t motor_control;
+
 /* AVG values */
 double avg;
-uint16_t avg_index, i;
+uint16_t avg_index;
 uint16_t avg_diff[AVG_SIZE];
+
+/* AVG values */
+double avg;
+uint16_t avg_pos_index, i;
+uint16_t avg_pos_diff[AVG_SIZE_10];
 
 /*
  * Maximum speed SPI configuration (21MHz, CPHA=0, CPOL=0, MSb first).
@@ -58,20 +69,9 @@ static const SPIConfig hs_spicfg = {
   SPI_CR1_BR_1
 };
 
-/*
- * SPI bus contender 1.
- */
-static THD_WORKING_AREA(spi_thread_1_wa, 256);
-static THD_FUNCTION(spi_thread_1, p) {
+/* ----- Resolver read ---- */
+int32_t resolverRead(){
 
-  (void)p;
-  chRegSetThreadName("SPI thread 1");
-  while (true) {
-
-    systime_t time;
-    time = 10;
-
-/* --- SPI communication --- */
     palClearPad(GPIOE, SAMPLE);
     //chThdSleepMilliseconds(1);
     spiAcquireBus(&SPID2);              /* Acquire ownership of the bus.    */
@@ -84,10 +84,10 @@ static THD_FUNCTION(spi_thread_1, p) {
     spiReleaseBus(&SPID2);              /* Ownership release.               */
 
     palSetPad(GPIOE, SAMPLE);
-/* --------------------------*/
 
     chSysLock();
-/* ---- Data bit separate ---- */
+
+  /* ---- Data bit separate ---- */
     pos = rxbuf[0] << 8;
     pos += rxbuf[1];
 
@@ -111,15 +111,28 @@ static THD_FUNCTION(spi_thread_1, p) {
     lot = bits[14];
     dos = bits[13];
     rdvel = bits[12];
-/* ----------------------------*/
+  /* ----------------------------*/
     chSysUnlock();
 
+    return pos;
+}
+/* ----------------------------*/
+
 /* --- Degree calculation -- */
-    calc_pos = pos % adc_cycle;
-    cycle = pos /adc_cycle;
+uint32_t resolverCalcDeg(uint16_t position, uint16_t phase_pair){
+
+    adc_cycle = MAX_RESOLVER / phase_pair;
+
+    calc_pos = position % adc_cycle;
+    cycle = position /adc_cycle;
 
     calc_pos = map(calc_pos, 0, adc_cycle, MAP_MAX, MAP_MIN);
-    control_pos = pulseGetValue();
+
+    return calc_pos;
+}
+
+/* ----- Different calc ---- */
+    /*control_pos = pulseGetValue();
     
     if (calc_pos > control_pos)
     {
@@ -129,11 +142,11 @@ static THD_FUNCTION(spi_thread_1, p) {
     ori_different = pos_different;
 
     pos_different = pos_different < 0 ? 0 : pos_different; 
-    pos_different = pos_different > 359 ? 359 : pos_different;
+    pos_different = pos_different > 359 ? 359 : pos_different;*/
 /* ---------------------------*/
 
 /* --- Different buffer --- */
-    avg_index++;
+/*    avg_index++;
     if(avg_index > (AVG_SIZE - 1)){
       avg_index = 0;
     }
@@ -145,27 +158,30 @@ static THD_FUNCTION(spi_thread_1, p) {
     pos_different = avg / AVG_SIZE;
 
     pos_different = pos_different < 0 ? 0 : pos_different; 
-    pos_different = pos_different > 359 ? 359 : pos_different;
+    pos_different = pos_different > 359 ? 359 : pos_different;*/
 /* -------------------------*/
-    chThdSleepMilliseconds(time);
-  }
+
+uint32_t resolverDegOffset(uint16_t position, int16_t offset){
+    motor_control = position + (359 - offset);
+    motor_control = motor_control % 360;
+
+    return motor_control;
 }
 
 void resolverInit(void) {
   palSetPad(GPIOE, 10);
   palSetPad(GPIOB, 12);
-
-  adc_cycle = MAX_RESOLVER / PHASE_PAIR;
-
-  chThdCreateStatic(spi_thread_1_wa, sizeof(spi_thread_1_wa), NORMALPRIO + 1, spi_thread_1, NULL);
 }
 
-void resolverCalc(void){
-}
-
-long map(long x, long in_min, long in_max, long out_min, long out_max)
-{
+long map(long x, long in_min, long in_max, long out_min, long out_max){
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+uint16_t rsValues(uint32_t num){
+  return num == 1 ? rdvel : \
+         num == 2 ? dos :   \
+         num == 3 ? lot :   \
+         num == 4 ? par : 0;
 }
 
 void cmd_resolverValues(BaseSequentialStream *chp, int argc, char *argv[]) {
@@ -200,6 +216,7 @@ void cmd_resolverValues(BaseSequentialStream *chp, int argc, char *argv[]) {
       chprintf(chp, "resolver_deg: %15d\r\n", calc_pos);
       chprintf(chp, "difference: %15d\r\n", pos_different);
       chprintf(chp, "ori_difference: %15d\r\n", ori_different);
+      chprintf(chp, "motor_control: %15d\r\n", motor_control);
 
       chThdSleepMilliseconds(10);
   }
