@@ -10,9 +10,14 @@
 #include "hal.h"
 
 void controlInit(void);
-void degreeCalib(void);
+void controlCalc(void);
+
+void degreeCalibOn(void);
+void degreeCalibOff(void);
+uint16_t controlValues(void);
 
 void cmd_controlSet(BaseSequentialStream *chp, int argc, char *argv[]);
+void cmd_motorSet(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_autoCalib(BaseSequentialStream *chp, int argc, char *argv[]);
 void cmd_controlValues(BaseSequentialStream *chp, int argc, char *argv[]);
 #endif

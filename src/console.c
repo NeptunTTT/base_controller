@@ -26,8 +26,11 @@
 
 #include "usbcfg.h"
 
-#include "resolver.h"
+#include "resolver_SPI.h"
+#include "resolver_ICU.h"
 #include "control.h"
+#include "calc.h"
+#include "pulse.h"
 
 /*===========================================================================*/
 /* Command line related.                                                     */
@@ -133,10 +136,15 @@ static const ShellCommand commands[] = {
   {"test", cmd_test},
   {"write", cmd_write},
 
-  {"resolver", cmd_resolverValues},
+  {"spi", cmd_rsSPIValues},
+  {"encoder", cmd_rsICUValues},
+
   {"control", cmd_controlSet},
+  {"motor", cmd_motorSet},
   {"control_values", cmd_controlValues},
   {"auto_calib", cmd_autoCalib},
+  {"calc_values", cmd_calcValues},
+  {"pulse_values", cmd_pulseValues},
   {NULL, NULL}
 };
 

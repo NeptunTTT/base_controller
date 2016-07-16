@@ -11,7 +11,8 @@
 #include "test.h"
 #include "console.h"
 #include "pulse.h"
-#include "resolver.h"
+#include "resolver_SPI.h"
+#include "resolver_ICU.h"
 #include "control.h"
 
 
@@ -30,7 +31,6 @@ static THD_FUNCTION(thread1, p) {
   while (TRUE) {
     systime_t time;
     time = 500;
-
     //palSetPad(GPIOD, GPIOD_LED6);
     chThdSleepMilliseconds(time/10);
     //palClearPad(GPIOD, GPIOD_LED6);
@@ -39,18 +39,24 @@ static THD_FUNCTION(thread1, p) {
   return 0; /* Never executed.*/
 }
 /*
- * 20ms Task
+ * 1ms Task
  */
-static THD_WORKING_AREA(task20ms_wa, 256);
-static THD_FUNCTION(task20ms, p) {
+static THD_WORKING_AREA(task1ms_wa, 256);
+static THD_FUNCTION(task1ms, p) {
   systime_t time; 
 
   (void)p;
-  chRegSetThreadName("task20ms");
+  chRegSetThreadName("task1ms");
   time = chVTGetSystemTime();  
   while (TRUE) {
-    time += MS2ST(5);
+    time += MS2ST(10);
 
+    //Analog measurement
+
+    
+    controlCalc();
+
+    rsSPICalc();
     chThdSleepUntil(time);
   }
   return 0; /* Never executed.*/
@@ -83,7 +89,12 @@ int main(void) {
   /*
    * Resolver control initialization.
    */
-  resolverInit();
+  rsSPIInit();
+
+  /*
+   * Resolver control initialization.
+   */
+  rsICUInit();
 
   /*
    * Control initialization.
@@ -91,9 +102,9 @@ int main(void) {
   controlInit();
 
   /*
-   * Creates the 20ms Task.
+   * Creates the 1ms Task.
    */
-  chThdCreateStatic(task20ms_wa, sizeof(task20ms_wa), NORMALPRIO, task20ms, NULL);
+  chThdCreateStatic(task1ms_wa, sizeof(task1ms_wa), NORMALPRIO, task1ms, NULL);
   
   /*
    * Creates the blinker thread.
